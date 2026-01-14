@@ -1,0 +1,3 @@
+The Shannon-Fano algorithm was one of the first descriptions of a method for constructing a prefix code. 
+In the field of data compression, it is a technique for constructing a prefix code based on a set of symbols and their probabilities.
+It is suboptimal in the sense that it does not always achieve the lowest possible expected codeword length, as Huffman coding does.
