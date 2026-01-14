@@ -15,10 +15,12 @@ def read_and_decode(bin_filename):
             # We assume the file starts with:
             # 1. Pickled Padding Count
             # 2. Pickled Codebook
-            padding_bits = pickle.load(f)  # The number of '0's added at the end
-            codes = pickle.load(f)         # The dictionary {Symbol: BinaryCode}
+            padding_bits = pickle.load(f)
+            image_dims = pickle.load(f)
+            codes = pickle.load(f)
             
             print(f"[Header] Padding Bits: {padding_bits}")
+            print(f"[Header] Image Dims: {image_dims if image_dims else 'N/A'}")
             print(f"[Header] Codebook Size: {len(codes)} symbols")
             
             # STEP 2: Read the Compressed Body (Pickled Bytes)
@@ -76,20 +78,37 @@ def read_and_decode(bin_filename):
     # STEP 4: OUTPUT
     print(f"Decoded {len(decoded_bytes)} bytes.")
     
-    # Attempt to decode as text for display, falling back to repr if binary
-    try:
-        decoded_text = decoded_bytes.decode('utf-8')
-        print("Decoded Text Content:")
-        print("-" * 30)
-        print(repr(decoded_text))
-        print("-" * 30)
-    except UnicodeDecodeError:
-        print("Decoded Content (Binary):")
-        print("-" * 30)
-        print(decoded_bytes[:100], "...")
-        print("-" * 30)
+    # If image, try to reconstruct
+    if image_dims:
+        try:
+            from PIL import Image
+            width, height = image_dims
+            expected_size = width * height
+            
+            if len(decoded_bytes) >= expected_size:
+                img = Image.frombytes('L', (width, height), bytes(decoded_bytes[:expected_size]))
+                output_path = bin_filename.replace('.bin', '.decoded.png')
+                img.save(output_path)
+                print(f"Image reconstructed and saved to: {output_path}")
+            else:
+                print(f"Warning: Not enough data for image reconstruction")
+        except Exception as e:
+            print(f"Image reconstruction failed: {e}")
+    else:
+        # Attempt to decode as text for display
+        try:
+            decoded_text = decoded_bytes.decode('utf-8')
+            print("Decoded Text Content:")
+            print("-" * 30)
+            print(repr(decoded_text))
+            print("-" * 30)
+        except UnicodeDecodeError:
+            print("Decoded Content (Binary):")
+            print("-" * 30)
+            print(decoded_bytes[:100], "...")
+            print("-" * 30)
 
-    print(f"Success! Reconstructed {len(decoded_bytes)} characters.")
+    print(f"Success! Reconstructed {len(decoded_bytes)} bytes.")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
