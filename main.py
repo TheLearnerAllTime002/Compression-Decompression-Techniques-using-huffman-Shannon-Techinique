@@ -179,10 +179,10 @@ def main():
         # No noise, just standard verification
         print("\nVerifying integrity (No Noise)...")
         if extra_padding > 0:
-             bits_to_decode = padded_bits[:-extra_padding]
+            bits_to_decode = padded_bits[:-extra_padding]
         else:
-             bits_to_decode = padded_bits
-             
+            bits_to_decode = padded_bits
+            
         decoded_data = coder.decode(bits_to_decode, tree_or_map)
         
         if decoded_data == original_data:
